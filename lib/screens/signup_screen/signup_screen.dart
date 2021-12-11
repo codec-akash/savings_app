@@ -1,8 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:savings_app/screens/home_screen.dart/loading_screen.dart';
+import 'package:savings_app/utils/page_navigation.dart';
 import 'package:savings_app/utils/strings.dart';
 import 'package:savings_app/widgets/otp_entry_widget.dart';
 
@@ -16,20 +19,10 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen>
     with TickerProviderStateMixin {
   TextEditingController phoneController = TextEditingController();
-  // late AnimationController animationController;
-  // late Animation translationAnimation;
   bool showOtp = false;
 
   @override
   void initState() {
-    // animationController = AnimationController(
-    //     vsync: this, duration: Duration(milliseconds: 2000));
-    // translationAnimation = Tween(begin: Offset(-900, 0), end: Offset(10.0, 0.0))
-    //     .animate(animationController);
-    // animationController.forward();
-    // animationController.addListener(() {
-    //   setState(() {});
-    // });
     super.initState();
   }
 
@@ -47,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: AnimationConfiguration.toStaggeredList(
                   duration: const Duration(milliseconds: 1000),
-                  delay: Duration(milliseconds: 1000),
+                  // delay: Duration(milliseconds: 1000),
                   childAnimationBuilder: (widget) => FlipAnimation(
                         // horizontalOffset: MediaQuery.of(context).size.width / 2,
                         child: FadeInAnimation(child: widget),
@@ -80,53 +73,6 @@ class _SignupScreenState extends State<SignupScreen>
                   ]),
             ),
           ),
-          // AnimatedBuilder(
-          //   animation: animationController,
-          //   builder: (context, child) {
-          //     return Column(
-          //       mainAxisSize: MainAxisSize.min,
-          //       crossAxisAlignment: CrossAxisAlignment.start,
-          //       children: [
-          //         Transform.translate(
-          //           offset: translationAnimation.value,
-          //           // angle: translationAnimation.value,
-          //           child: Container(
-          //             padding: EdgeInsets.symmetric(horizontal: 20),
-          //             margin: EdgeInsets.only(bottom: 50),
-          //             child: Text(
-          //               Strings.trackExpenses,
-          //               style: TextStyle(color: Colors.white, fontSize: 22),
-          //             ),
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: translationAnimation.value,
-          //           // angle: translationAnimation.value,
-          //           child: Container(
-          //             padding: EdgeInsets.symmetric(horizontal: 20),
-          //             margin: EdgeInsets.only(bottom: 50),
-          //             child: Text(
-          //               Strings.manageFinances,
-          //               style: TextStyle(color: Colors.white, fontSize: 22),
-          //             ),
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: translationAnimation.value,
-          //           // angle: translationAnimation.value,
-          //           child: Container(
-          //             padding: EdgeInsets.symmetric(horizontal: 20),
-          //             margin: EdgeInsets.only(bottom: 50),
-          //             child: Text(
-          //               Strings.trackSavingsAndGoal,
-          //               style: TextStyle(color: Colors.white, fontSize: 22),
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     );
-          //   },
-          // ),
           Expanded(child: Container()),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 40),
@@ -170,7 +116,12 @@ class _SignupScreenState extends State<SignupScreen>
                   SizedBox(height: 30),
                 ],
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(PageRouteNavigation(
+                        enterPage: LoadingScreen(), exitPage: SignupScreen()));
+                    // Navigator.of(context).push(CupertinoPageRoute(
+                    //     builder: (context) => LoadingScreen()));
+                  },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     width: double.infinity,
@@ -180,7 +131,7 @@ class _SignupScreenState extends State<SignupScreen>
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      "Submit",
+                      "Less Goo",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
