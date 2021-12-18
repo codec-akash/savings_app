@@ -6,11 +6,20 @@ class OtpEntryWidget extends StatefulWidget {
   const OtpEntryWidget({Key? key}) : super(key: key);
 
   @override
-  _OtpEntryWidgetState createState() => _OtpEntryWidgetState();
+  OtpEntryWidgetState createState() => OtpEntryWidgetState();
 }
 
-class _OtpEntryWidgetState extends State<OtpEntryWidget> {
+class OtpEntryWidgetState extends State<OtpEntryWidget> {
   TextEditingController otpController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    otpController.addListener(() {
+      setState(() {});
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

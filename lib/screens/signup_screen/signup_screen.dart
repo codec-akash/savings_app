@@ -1,9 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:savings_app/bloc/auth_bloc.dart';
 import 'package:savings_app/screens/home_screen.dart/loading_screen.dart';
 import 'package:savings_app/utils/page_navigation.dart';
 import 'package:savings_app/utils/strings.dart';
@@ -19,6 +22,9 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen>
     with TickerProviderStateMixin {
   TextEditingController phoneController = TextEditingController();
+  final GlobalKey<OtpEntryWidgetState> _otpKey =
+      GlobalKey<OtpEntryWidgetState>();
+  FirebaseAuth auth = FirebaseAuth.instance;
   bool showOtp = false;
 
   @override
@@ -111,16 +117,58 @@ class _SignupScreenState extends State<SignupScreen>
                   keyboardType: TextInputType.phone,
                 ),
                 SizedBox(height: 10),
-                if (phoneController.text.length == 10) ...[
-                  OtpEntryWidget(),
+                if (showOtp) ...[
+                  OtpEntryWidget(key: _otpKey),
                   SizedBox(height: 30),
                 ],
+                BlocListener<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is PhoneVerified) {
+                      setState(() {
+                        showOtp = true;
+                      });
+                    } else {
+                      setState(() {
+                        showOtp = false;
+                      });
+                    }
+                  },
+                  child: Container(),
+                ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(PageRouteNavigation(
-                        enterPage: LoadingScreen(), exitPage: SignupScreen()));
-                    // Navigator.of(context).push(CupertinoPageRoute(
-                    //     builder: (context) => LoadingScreen()));
+                  onTap: () async {
+                    showOtp
+                        ? {
+                            context
+                                .read<AuthBloc>()
+                                .add(VerifyOTP(otp: '123456'))
+                          }
+                        : {
+                            context
+                                .read<AuthBloc>()
+                                .add(VerifyPhone(phoneNumber: '8422022077'))
+                          };
+                    // await auth.verifyPhoneNumber(
+                    //   phoneNumber: "+91${phoneController.text}",
+                    //   verificationCompleted: (PhoneAuthCredential credential) {
+                    //     print("Verification failed ${credential.smsCode}");
+                    //   },
+                    //   verificationFailed: (FirebaseAuthException e) {
+                    //     print(
+                    //         "OTP failed - ${e.message} phoneNumber - ${e.phoneNumber}");
+                    //   },
+                    //   codeSent:
+                    //       (String verificationId, int? resendToken) async {
+                    //     String smsCode =
+                    //         _otpKey.currentState?.otpController.text ?? "";
+                    //     PhoneAuthCredential credential =
+                    //         PhoneAuthProvider.credential(
+                    //             verificationId: verificationId,
+                    //             smsCode: smsCode);
+                    //     await auth.signInWithCredential(credential);
+                    //   },
+                    //   codeAutoRetrievalTimeout: (String verificationId) {},
+                    // );
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),

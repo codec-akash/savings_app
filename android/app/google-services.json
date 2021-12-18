@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "584888197842",
+    "project_id": "savingsapp-c800e",
+    "storage_bucket": "savingsapp-c800e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584888197842:android:ff4979cdf43796f2c2830b",
+        "android_client_info": {
+          "package_name": "com.crickash.savings_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "584888197842-blmhut4qteljoir6qc1vahvm4hdtosv2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB84yYr7n_M70ETb1K_UxkjV_Z9S17M6No"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "584888197842-blmhut4qteljoir6qc1vahvm4hdtosv2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
