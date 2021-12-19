@@ -26,6 +26,7 @@ class _SignupScreenState extends State<SignupScreen>
       GlobalKey<OtpEntryWidgetState>();
   FirebaseAuth auth = FirebaseAuth.instance;
   bool showOtp = false;
+  String verificationId = '';
 
   @override
   void initState() {
@@ -107,11 +108,11 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                   onChanged: (val) {
                     setState(() {
-                      if (val.length == 10) {
-                        showOtp = true;
-                      } else {
-                        showOtp = false;
-                      }
+                      // if (val.length == 10) {
+                      //   showOtp = true;
+                      // } else {
+                      //   showOtp = false;
+                      // }
                     });
                   },
                   keyboardType: TextInputType.phone,
@@ -123,13 +124,30 @@ class _SignupScreenState extends State<SignupScreen>
                 ],
                 BlocListener<AuthBloc, AuthState>(
                   listener: (context, state) {
-                    if (state is PhoneVerified) {
+                    if (state is AuthFailedError) {
+                      print("Error");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("error is ${state.message}")));
+                    }
+                    // if (state is PhoneVerifiedSuccess) {
+                    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    //       content: Text("Phone number verified, code sent")));
+                    // }
+                    if (state is OtpAutoRetrevalTimeoutComplete) {
+                      print("TimeOut buddy");
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Time out for auto retrieval")));
+                    }
+                    if (state is PhoneVerifiedSuccess) {
                       setState(() {
                         showOtp = true;
+                        verificationId = state.verificationId;
+                        print("Verification Id");
                       });
                     } else {
                       setState(() {
                         showOtp = false;
+                        print("failed");
                       });
                     }
                   },
@@ -139,36 +157,14 @@ class _SignupScreenState extends State<SignupScreen>
                   onTap: () async {
                     showOtp
                         ? {
-                            context
-                                .read<AuthBloc>()
-                                .add(VerifyOTP(otp: '123456'))
+                            context.read<AuthBloc>().add(VerifyOTP(
+                                otp: _otpKey.currentState!.otpController.text,
+                                verificationId: verificationId))
                           }
                         : {
-                            context
-                                .read<AuthBloc>()
-                                .add(VerifyPhone(phoneNumber: '8422022077'))
+                            context.read<AuthBloc>().add(
+                                VerifyPhone(phoneNumber: phoneController.text))
                           };
-                    // await auth.verifyPhoneNumber(
-                    //   phoneNumber: "+91${phoneController.text}",
-                    //   verificationCompleted: (PhoneAuthCredential credential) {
-                    //     print("Verification failed ${credential.smsCode}");
-                    //   },
-                    //   verificationFailed: (FirebaseAuthException e) {
-                    //     print(
-                    //         "OTP failed - ${e.message} phoneNumber - ${e.phoneNumber}");
-                    //   },
-                    //   codeSent:
-                    //       (String verificationId, int? resendToken) async {
-                    //     String smsCode =
-                    //         _otpKey.currentState?.otpController.text ?? "";
-                    //     PhoneAuthCredential credential =
-                    //         PhoneAuthProvider.credential(
-                    //             verificationId: verificationId,
-                    //             smsCode: smsCode);
-                    //     await auth.signInWithCredential(credential);
-                    //   },
-                    //   codeAutoRetrievalTimeout: (String verificationId) {},
-                    // );
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),

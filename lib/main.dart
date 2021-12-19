@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:savings_app/bloc/auth_bloc.dart';
+import 'package:savings_app/repository/auth_repo.dart';
 import 'package:savings_app/screens/home_screen.dart/loading_screen.dart';
 import 'package:savings_app/screens/signup_screen/signup_screen.dart';
 import 'package:savings_app/utils/theme.dart';
@@ -22,13 +23,14 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(firebaseAuth),
+          create: (context) =>
+              AuthBloc(authRepo: AuthRepo(firebaseAuth: FirebaseAuth.instance)),
         ),
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           var child;
-          if (state is OtpVerified) {
+          if (state is OtpVerifiedSuccess) {
             child = LoadingScreen();
           } else {
             child = SignupScreen();

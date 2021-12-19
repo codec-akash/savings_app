@@ -1,52 +1,78 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:savings_app/model/auth_model.dart';
+import 'package:savings_app/repository/auth_repo.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final FirebaseAuth firebaseAuth;
-  AuthBloc(this.firebaseAuth) : super(AuthInitial()) {
+  final AuthRepo authRepo;
+  AuthBloc({required this.authRepo}) : super(AuthInitial()) {
     on<VerifyPhone>((event, emit) async {
-      await _verifyPhone(emit);
+      await _verifyPhone(event, emit);
     });
+    on<OtpAutoRetrevalTimeOut>((event, emit) =>
+        (OtpAutoRetrevalTimeoutComplete(event.verificationId)));
+    on<OtpSent>((event, emit) =>
+        emit(PhoneVerifiedSuccess(verificationId: event.verificationId)));
+    on<VerificationFailed>(
+        (event, emit) => emit(AuthFailedError(message: event.message)));
+    on<VerificationComplete>(
+        (event, emit) => emit(OtpVerifiedSuccess(uid: event.uid)));
     on<VerifyOTP>((event, emit) async {
-      await _verifyOtp(emit);
+      await _verifyOtp(event, emit);
     });
   }
 
-  Future<void> _verifyPhone(Emitter<AuthState> emit) async {
+  Future<void> _verifyPhone(VerifyPhone event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await Future.delayed(Duration(milliseconds: 500));
-      emit(PhoneVerified());
+      await authRepo.verifyPhoneNumber(
+        phoneNumber: event.phoneNumber,
+        onCodeAutoRetrievalTimeout: _onCodeAutoRetrievalTimeout,
+        onCodeSent: _onCodeSent,
+        onVerificationFailed: _onVerificationFailed,
+        onVerificationCompleted: _onVerificationComplete,
+      );
     } catch (e) {
-      print("object");
-      emit(AuthFailedError());
+      emit(AuthFailedError(message: e.toString()));
     }
   }
 
-  Future<void> _verifyOtp(Emitter<AuthState> emit) async {
+  Future<void> _verifyOtp(VerifyOTP event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await Future.delayed(Duration(milliseconds: 500));
-      emit(OtpVerified());
+      AuthModel authModel = await authRepo.verifySMSCode(
+          smsCode: event.otp, verificationId: event.verificationId);
+      print("USerid - ${authModel.uid}");
+      emit(OtpVerifiedSuccess(uid: authModel.uid));
     } catch (e) {
       print("object");
-      emit(AuthFailedError());
+      emit(AuthFailedError(message: e.toString()));
     }
   }
 
-  // @override
-  // Stream<AuthState> mapEventToState(AuthEvent event) async* {
-  //   if (event is VerifyPhone) {
-  //     print("check Verify");
-  //     yield PhoneVerified();
-  //   }
-  //   if (event is VerifyOTP) {
-  //     print("check OTP");
-  //     yield OtpVerified();
-  //   }
-  //   yield AuthInitial();
-  // }
+  void _onCodeAutoRetrievalTimeout(String verificationId) {
+    add(OtpAutoRetrevalTimeOut(verificationId: verificationId));
+  }
+
+  void _onCodeSent(String verificationId, int? token) {
+    print("Ceck otp sent");
+    add(OtpSent(verificationId: verificationId, token: token));
+  }
+
+  void _onVerificationFailed(FirebaseAuthException exception) {
+    add(VerificationFailed(message: e.toString()));
+  }
+
+  void _onVerificationComplete(PhoneAuthCredential credential) async {
+    final AuthModel authModel =
+        await authRepo.verifyWithCredential(authCredential: credential);
+    if (authModel.phoneAuthModelState == AuthModelStatus.verified) {
+      add(VerificationComplete(authModel.uid));
+    }
+  }
 }
