@@ -11,10 +11,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       body: Center(
         child: Container(
-          child: const Text("data"),
+          child: const Text("Loading"),
         ),
       ),
     );

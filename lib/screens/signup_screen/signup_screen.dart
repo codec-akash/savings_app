@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:savings_app/bloc/auth_bloc.dart';
 import 'package:savings_app/screens/home_screen.dart/loading_screen.dart';
-import 'package:savings_app/utils/page_navigation.dart';
 import 'package:savings_app/utils/strings.dart';
 import 'package:savings_app/widgets/otp_entry_widget.dart';
 
@@ -31,6 +30,9 @@ class _SignupScreenState extends State<SignupScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      context.read<AuthBloc>().add(CheckAuthToken());
+    });
   }
 
   @override
@@ -81,118 +83,107 @@ class _SignupScreenState extends State<SignupScreen>
             ),
           ),
           Expanded(child: Container()),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 40),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(15),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                    prefixText: '+91',
-                    label: const Text(Strings.phoneTextFieldName),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Theme.of(context).scaffoldBackgroundColor),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                    ),
-                  ),
-                  onChanged: (val) {
-                    setState(() {
-                      // if (val.length == 10) {
-                      //   showOtp = true;
-                      // } else {
-                      //   showOtp = false;
-                      // }
-                    });
-                  },
-                  keyboardType: TextInputType.phone,
-                ),
-                SizedBox(height: 10),
-                if (showOtp) ...[
-                  OtpEntryWidget(key: _otpKey),
-                  SizedBox(height: 30),
-                ],
-                BlocListener<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (state is AuthFailedError) {
-                      print("Error");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("error is ${state.message}")));
-                    }
-                    // if (state is PhoneVerifiedSuccess) {
-                    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    //       content: Text("Phone number verified, code sent")));
-                    // }
-                    if (state is OtpAutoRetrevalTimeoutComplete) {
-                      print("TimeOut buddy");
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("Time out for auto retrieval")));
-                    }
-                    if (state is PhoneVerifiedSuccess) {
-                      setState(() {
-                        showOtp = true;
-                        verificationId = state.verificationId;
-                        print("Verification Id");
-                      });
-                    } else {
-                      setState(() {
-                        showOtp = false;
-                        print("failed");
-                      });
-                    }
-                  },
-                  child: Container(),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    showOtp
-                        ? {
-                            context.read<AuthBloc>().add(VerifyOTP(
-                                otp: _otpKey.currentState!.otpController.text,
-                                verificationId: verificationId))
-                          }
-                        : {
-                            context.read<AuthBloc>().add(
-                                VerifyPhone(phoneNumber: phoneController.text))
-                          };
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Less Goo",
-                      style: TextStyle(color: Colors.white),
-                    ),
+          BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is TokenFound) {
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => LoadingScreen()));
+              }
+            },
+            builder: (context, state) {
+              if (state is CheckTokenLoading) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 40),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(15),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Container(
-            color: Theme.of(context).primaryColor.withOpacity(0.7),
-            height: 30,
-            width: double.infinity,
-            alignment: Alignment.center,
-            child: Text(
-              "Already, have an account ?",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
-            ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: phoneController,
+                      decoration: InputDecoration(
+                        prefixText: '+91',
+                        label: const Text(Strings.phoneTextFieldName),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Theme.of(context).scaffoldBackgroundColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    SizedBox(height: 10),
+                    if (showOtp) ...[
+                      OtpEntryWidget(key: _otpKey),
+                      SizedBox(height: 30),
+                    ],
+                    BlocListener<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is AuthFailedError) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("error is ${state.message}")));
+                        }
+                        if (state is OtpAutoRetrevalTimeoutComplete) {
+                          print("TimeOut buddy");
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Time out for auto retrieval")));
+                        }
+                        if (state is PhoneVerifiedSuccess) {
+                          setState(() {
+                            showOtp = true;
+                            verificationId = state.verificationId;
+                          });
+                        } else {
+                          setState(() {
+                            showOtp = false;
+                          });
+                        }
+                      },
+                      child: Container(),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        showOtp
+                            ? {
+                                context.read<AuthBloc>().add(VerifyOTP(
+                                    otp: _otpKey
+                                        .currentState!.otpController.text,
+                                    verificationId: verificationId))
+                              }
+                            : {
+                                context.read<AuthBloc>().add(VerifyPhone(
+                                    phoneNumber: phoneController.text))
+                              };
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Less Goo",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

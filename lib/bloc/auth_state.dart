@@ -33,3 +33,14 @@ class OtpAutoRetrevalTimeoutComplete extends AuthState {
   @override
   List<Object> get props => [verificationId];
 }
+
+class LogoutSuccess extends AuthState {}
+
+class TokenFound extends AuthState {
+  final String token;
+  TokenFound({required this.token});
+}
+
+class CheckTokenLoading extends AuthState {}
+
+class NoTokenFound extends AuthState {}

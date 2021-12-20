@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 ThemeData dark = ThemeData(
   primaryColor: const Color(0xffEDAE49),
   scaffoldBackgroundColor: const Color(0xff110f1a),
-  // brightness: Brightness.dark,
-  visualDensity: VisualDensity.adaptivePlatformDensity,
+  brightness: Brightness.dark,
+  // visualDensity: VisualDensity.adaptivePlatformDensity,
 );
 
 ThemeData light = ThemeData(

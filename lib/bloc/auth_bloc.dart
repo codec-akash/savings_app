@@ -25,6 +25,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyOTP>((event, emit) async {
       await _verifyOtp(event, emit);
     });
+    on<CheckAuthToken>((event, emit) => _checkAuthToken(emit));
+    on<Logout>((event, emit) => _logout(emit));
   }
 
   Future<void> _verifyPhone(VerifyPhone event, Emitter<AuthState> emit) async {
@@ -51,6 +53,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(OtpVerifiedSuccess(uid: authModel.uid));
     } catch (e) {
       print("object");
+      emit(AuthFailedError(message: e.toString()));
+    }
+  }
+
+  Future<void> _checkAuthToken(Emitter<AuthState> emit) async {
+    emit(CheckTokenLoading());
+    try {
+      String? token = await authRepo.checkAuthToken();
+      if (token != null) {
+        emit(TokenFound(token: token));
+      } else {
+        emit(NoTokenFound());
+      }
+    } catch (e) {
+      emit(AuthFailedError(message: e.toString()));
+    }
+  }
+
+  Future<void> _logout(Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      await authRepo.logout();
+      emit(LogoutSuccess());
+    } catch (e) {
       emit(AuthFailedError(message: e.toString()));
     }
   }

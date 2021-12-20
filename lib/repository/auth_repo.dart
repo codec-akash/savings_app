@@ -49,4 +49,20 @@ class AuthRepo {
       return AuthModel(phoneAuthModelState: AuthModelStatus.error);
     }
   }
+
+  Future<String?> checkAuthToken() async {
+    try {
+      await Future.delayed(Duration(seconds: 1));
+      String? userID = await firebaseAuth.currentUser?.uid;
+      // if (userID == null) {
+      //   throw Exception("Token not Found");
+      // }
+      return userID;
+      //Some logic
+    } catch (e) {}
+  }
+
+  Future<void> logout() async {
+    await firebaseAuth.signOut();
+  }
 }

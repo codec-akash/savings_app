@@ -36,3 +36,7 @@ class VerificationComplete extends AuthEvent {
   final String? uid;
   VerificationComplete(this.uid);
 }
+
+class Logout extends AuthEvent {}
+
+class CheckAuthToken extends AuthEvent {}
