@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:savings_app/model/auth_model.dart';
+import 'package:savings_app/model/user_model.dart';
 
 class AuthRepo {
   final FirebaseAuth firebaseAuth;
@@ -52,14 +53,21 @@ class AuthRepo {
 
   Future<String?> checkAuthToken() async {
     try {
-      await Future.delayed(Duration(seconds: 1));
-      String? userID = await firebaseAuth.currentUser?.uid;
-      // if (userID == null) {
-      //   throw Exception("Token not Found");
-      // }
-      return userID;
+      // await Future.delayed(const Duration(seconds: 1));
+      String? authToken = await firebaseAuth.currentUser?.getIdToken(true);
+      return authToken;
       //Some logic
     } catch (e) {}
+  }
+
+  Future<UserModel> getuser() async {
+    var firebaseUser = firebaseAuth.currentUser;
+    String token = await firebaseUser!.getIdToken(true);
+    UserModel user = UserModel(
+        uid: firebaseUser.uid,
+        phoneNumber: firebaseUser.phoneNumber!,
+        token: token);
+    return user;
   }
 
   Future<void> logout() async {
