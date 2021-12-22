@@ -14,7 +14,6 @@ class OtpEntryWidgetState extends State<OtpEntryWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     otpController.addListener(() {
       setState(() {});
     });

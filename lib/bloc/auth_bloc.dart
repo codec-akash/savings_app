@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:savings_app/model/auth_model.dart';
+import 'package:savings_app/model/user_model.dart';
 import 'package:savings_app/repository/auth_repo.dart';
 
 part 'auth_event.dart';
@@ -10,6 +11,9 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepo authRepo;
+
+  late UserModel user;
+
   AuthBloc({required this.authRepo}) : super(AuthInitial()) {
     on<VerifyPhone>((event, emit) async {
       await _verifyPhone(event, emit);
@@ -49,10 +53,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       AuthModel authModel = await authRepo.verifySMSCode(
           smsCode: event.otp, verificationId: event.verificationId);
-      print("USerid - ${authModel.uid}");
+      user = await authRepo.getuser();
       emit(OtpVerifiedSuccess(uid: authModel.uid));
     } catch (e) {
-      print("object");
       emit(AuthFailedError(message: e.toString()));
     }
   }
@@ -62,6 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       String? token = await authRepo.checkAuthToken();
       if (token != null) {
+        user = await authRepo.getuser();
         emit(TokenFound(token: token));
       } else {
         emit(NoTokenFound());
@@ -86,7 +90,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onCodeSent(String verificationId, int? token) {
-    print("Ceck otp sent");
     add(OtpSent(verificationId: verificationId, token: token));
   }
 

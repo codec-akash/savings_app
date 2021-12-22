@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
@@ -31,9 +30,9 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           var child;
           if (state is OtpVerifiedSuccess) {
-            child = LoadingScreen();
+            child = const LoadingScreen();
           } else {
-            child = SignupScreen();
+            child = const SignupScreen();
           }
           return AnimatedSwitcher(
             duration: const Duration(seconds: 1),
